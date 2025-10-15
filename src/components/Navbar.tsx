@@ -18,15 +18,15 @@ export default function Navbar() {
     return (
         <>
             {/* Sidebar for desktop */}
-            <nav className="hidden md:flex bg-white shadow-md w-64 min-h-screen p-4 flex-col">
-                <h1 className="text-2xl font-bold mb-6">Workout Tracker</h1>
+            <nav className="hidden md:flex w-64 min-h-screen p-6 flex-col bg-[var(--primary-700)] text-white">
+                <h1 className="text-2xl font-semibold mb-6">Workout Tracker</h1>
                 <ul className="flex flex-col gap-2">
                     {tabs.map((tab) => (
                         <li key={tab.name}>
                             <Link
                                 href={tab.href}
-                                className={`flex items-center px-4 py-2 rounded hover:bg-gray-100 transition ${
-                                    pathname === tab.href ? "bg-gray-200 font-semibold" : ""
+                                className={`flex items-center px-4 py-2 rounded-sm transition hover:bg-white/10 ${
+                                    pathname === tab.href ? "bg-white/20 font-semibold" : ""
                                 }`}
                             >
                                 <Image
@@ -34,7 +34,7 @@ export default function Navbar() {
                                     alt={tab.name + " icon"}
                                     width={24}
                                     height={24}
-                                    className="mr-3"
+                                    className="mr-3 invert brightness-0"
                                 />
                                 {tab.name}
                             </Link>
@@ -44,14 +44,14 @@ export default function Navbar() {
             </nav>
 
             {/* Bottom navbar for mobile */}
-            <nav className="fixed bottom-0 left-0 right-0 md:hidden bg-white shadow-t border-t border-gray-200">
-                <ul className="flex justify-around">
+            <nav className="fixed bottom-0 left-0 right-0 md:hidden bg-[var(--primary-700)] text-white">
+                <ul className="flex justify-around py-1">
                     {tabs.map((tab) => (
                         <li key={tab.name}>
                             <Link
                                 href={tab.href}
                                 className={`flex flex-col items-center justify-center py-2 text-sm ${
-                                    pathname === tab.href ? "text-blue-600 font-semibold" : "text-gray-600"
+                                    pathname === tab.href ? "font-semibold" : "opacity-90"
                                 }`}
                             >
                                 <Image
@@ -59,6 +59,7 @@ export default function Navbar() {
                                     alt={tab.name + " icon"}
                                     width={24}
                                     height={24}
+                                    className="invert brightness-0"
                                 />
                                 <span className="mt-1">{tab.name}</span>
                             </Link>

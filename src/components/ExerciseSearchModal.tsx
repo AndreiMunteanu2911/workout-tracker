@@ -32,14 +32,14 @@ export default function ExerciseSearchModal({
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
+            <div className="bg-white rounded-sm p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
                 <h3 className="text-xl font-bold mb-4">Search Exercises</h3>
                 <input
                     type="text"
                     placeholder="Type to search..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="border rounded px-3 py-2 w-full mb-4"
+                    className="border rounded-sm px-3 py-2 w-full mb-4"
                     autoFocus
                 />
                 {isSearching && <p className="text-gray-500">Searching...</p>}
@@ -48,7 +48,7 @@ export default function ExerciseSearchModal({
                         <div
                             key={exercise.exercise_id}
                             onClick={() => onSelectExercise(exercise)}
-                            className="p-3 border rounded hover:bg-gray-100 cursor-pointer"
+                            className="p-3 border rounded-sm hover:bg-gray-100 cursor-pointer"
                         >
                             <div className="font-medium">{exercise.name}</div>
                             {exercise.target_muscles && exercise.target_muscles.length > 0 && (

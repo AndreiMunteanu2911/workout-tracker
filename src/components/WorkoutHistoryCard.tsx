@@ -63,7 +63,7 @@ export default function WorkoutHistoryCard({ workout, isExpanded, onToggle }: Wo
     };
 
     return (
-        <div className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+        <div className="border rounded-sm overflow-hidden shadow-sm hover:shadow-md transition-shadow">
             {/* Workout Header */}
             <div
                 onClick={onToggle}

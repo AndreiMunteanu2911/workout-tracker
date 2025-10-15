@@ -79,7 +79,7 @@ export default function ExercisesPage() {
             <div className="p-4">
                 <h1 className="text-3xl font-bold mb-6">Exercises</h1>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="flex flex-col gap-3">
                     {exercises.map((exercise) => (
                         <ExerciseCard key={exercise.exercise_id} exercise={exercise} />
                     ))}

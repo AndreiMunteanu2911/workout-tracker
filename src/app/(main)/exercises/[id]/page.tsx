@@ -49,43 +49,39 @@ export default function ExerciseDetailsPage() {
     return (
         <ProtectedWrapper>
             <div className="p-4">
-                <h1 className="text-3xl font-bold mb-4">{exercise.name}</h1>
+                <div className="mb-4">
+                    <h1 className="text-3xl font-semibold">{exercise.name}</h1>
+                    <div className="text-sm text-[var(--muted-foreground)]">{exercise.body_parts?.join(", ")}</div>
+                </div>
 
                 {exercise.gif_url && (
-                    <div className="mb-4">
+                    <div className="mb-6 border rounded-sm p-4 bg-white">
                         <img
                             src={exercise.gif_url}
                             alt={exercise.name}
-                            className="rounded-lg max-w-full h-auto"
+                            className="rounded-sm max-w-full h-auto"
                         />
                     </div>
                 )}
 
-                <div className="mb-2">
-                    <strong>Target Muscles:</strong>{" "}
-                    {exercise.target_muscles?.join(", ") || "—"}
-                </div>
-
-                <div className="mb-2">
-                    <strong>Body Parts:</strong> {exercise.body_parts?.join(", ") || "—"}
-                </div>
-
-                <div className="mb-2">
-                    <strong>Equipments:</strong> {exercise.equipments?.join(", ") || "—"}
-                </div>
-
-                <div className="mb-2">
-                    <strong>Secondary Muscles:</strong>{" "}
-                    {exercise.secondary_muscles?.join(", ") || "—"}
-                </div>
-
-                <div className="mb-2">
-                    <strong>Instructions:</strong>
-                    <ul className="list-disc list-inside">
-                        {exercise.instructions?.length
-                            ? exercise.instructions.map((step, idx) => <li key={idx}>{step}</li>)
-                            : <li>—</li>}
-                    </ul>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="card p-4">
+                        <div className="text-sm font-semibold text-[var(--muted-foreground)] mb-2">Overview</div>
+                        <div className="space-y-2">
+                            <div><strong>Target Muscles:</strong> {exercise.target_muscles?.join(", ") || "—"}</div>
+                            <div><strong>Body Parts:</strong> {exercise.body_parts?.join(", ") || "—"}</div>
+                            <div><strong>Equipments:</strong> {exercise.equipments?.join(", ") || "—"}</div>
+                            <div><strong>Secondary Muscles:</strong> {exercise.secondary_muscles?.join(", ") || "—"}</div>
+                        </div>
+                    </div>
+                    <div className="card p-4">
+                        <div className="text-sm font-semibold text-[var(--muted-foreground)] mb-2">Instructions</div>
+                        <ul className="list-disc list-inside space-y-1">
+                            {exercise.instructions?.length
+                                ? exercise.instructions.map((step, idx) => <li key={idx}>{step}</li>)
+                                : <li>—</li>}
+                        </ul>
+                    </div>
                 </div>
             </div>
         </ProtectedWrapper>

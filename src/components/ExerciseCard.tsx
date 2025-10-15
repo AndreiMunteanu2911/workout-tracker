@@ -18,11 +18,9 @@ interface ExerciseCardProps {
 export default function ExerciseCard({ exercise }: ExerciseCardProps) {
     return (
         <Link href={`/exercises/${exercise.exercise_id}`}>
-            <div className="border rounded-xl p-4 hover:shadow-lg transition cursor-pointer bg-white">
-                <div className="text-lg font-semibold mb-2">{exercise.name}</div>
-                <div className="text-sm text-gray-600">
-                    {exercise.body_parts?.join(", ") || "No body parts listed"}
-                </div>
+            <div className="border rounded-sm p-4 transition cursor-pointer bg-white hover:shadow-md hover:border-[var(--primary-200)]">
+                <div className="text-lg font-semibold mb-1 text-[var(--color-foreground)]">{exercise.name}</div>
+                <div className="text-xs uppercase tracking-wide text-[var(--muted-foreground)]">{exercise.body_parts?.join(", ") || "No body parts listed"}</div>
             </div>
         </Link>
     );

@@ -34,24 +34,34 @@ export default function SignUpPage() {
     };
 
     return (
-        <div className="min-w-full">
-            <div className="text-3xl font-bold mb-4 ">Sign Up</div>
-            <form onSubmit={handleSubmit}>
+        <div className="w-full text-white">
+            <h1 className="text-3xl font-semibold mb-6">Sign Up</h1>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
                 <input
                     onChange={(e) => setEmail(e.target.value)}
                     value={email}
-                    type="email" placeholder="Enter your email address:" required></input>
+                    type="email"
+                    placeholder="Email"
+                    required
+                    className="rounded-sm px-4 py-3 bg-white/10 placeholder-white/70 text-white border border-white/20 focus:bg-white/20"
+                />
                 <input
                     onChange={(e) => setPassword(e.target.value)}
                     value={password}
-                    type="password" placeholder="Enter your password:" required></input>
-                <button type={"submit"}>Create account</button>
+                    type="password"
+                    placeholder="Password"
+                    required
+                    className="rounded-sm px-4 py-3 bg-white/10 placeholder-white/70 text-white border border-white/20 focus:bg-white/20"
+                />
+                <Button type="submit" className="mt-2" variant="secondary">Create account</Button>
             </form>
-            {message && <div>{message}</div>}
+            {message && <div className="mt-3 text-white/90">{message}</div>}
 
-            <Link href="/login">
-                <Button>Already have an account?</Button>
-            </Link>
+            <div className="mt-6">
+                <Link href="/login">
+                    <Button className="w-full" variant="primary">Already have an account?</Button>
+                </Link>
+            </div>
         </div>
     );
 }
