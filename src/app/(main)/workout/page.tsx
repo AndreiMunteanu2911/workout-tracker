@@ -1,9 +1,13 @@
-"use client";
+'use client'
 
 import { useState, useEffect } from "react";
 import ProtectedWrapper from "@/components/ProtectedWrapper";
-import Button from "@/components/Button";
 import supabase from "@/helper/supabaseClient";
+import ExerciseCard from "@/components/WorkoutExerciseCard";
+import ExerciseSearchModal from "@/components/ExerciseSearchModal";
+import ResumeDraftPrompt from "@/components/ResumeDraftPrompt";
+import WorkoutHeader from "@/components/WorkoutHeader";
+import Button from "@/components/Button";
 
 interface Exercise {
     exercise_id: string;
@@ -29,15 +33,28 @@ interface Set {
     weight: number;
 }
 
+interface DraftWorkout {
+    id: string;
+    name: string;
+    workout_date: string;
+    workout_exercises: {
+        id: string;
+        exercise_id: string;
+        exercise: Exercise;
+        order_index: number;
+        sets: Set[];
+    }[];
+}
+
 export default function WorkoutPage() {
     const [workoutStarted, setWorkoutStarted] = useState(false);
     const [workoutName, setWorkoutName] = useState("My Workout");
     const [workoutId, setWorkoutId] = useState<string | null>(null);
     const [workoutExercises, setWorkoutExercises] = useState<WorkoutExercise[]>([]);
     const [showResumePrompt, setShowResumePrompt] = useState(false);
-    const [draftWorkout, setDraftWorkout] = useState<any>(null);
+    const [draftWorkout, setDraftWorkout] = useState<DraftWorkout | null>(null);
+    const [errorMessages, setErrorMessages] = useState<{ [key: string]: string }>({});
 
-    // Exercise search
     const [showExerciseSearch, setShowExerciseSearch] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState<Exercise[]>([]);
@@ -74,50 +91,12 @@ export default function WorkoutPage() {
                 }
             } catch (error) {
                 console.error("Error checking for draft workout:", error);
+                setErrorMessages((prev) => ({ ...prev, general: "Failed to check for draft workout." }));
             }
         };
 
         checkForDraftWorkout();
     }, []);
-
-    // Resume draft workout
-    const resumeDraftWorkout = () => {
-        if (!draftWorkout) return;
-
-        setWorkoutId(draftWorkout.id);
-        setWorkoutName(draftWorkout.name);
-
-        // Transform the data structure
-        const exercises = draftWorkout.workout_exercises.map((we: any) => ({
-            id: we.id,
-            exercise_id: we.exercise_id,
-            exercise: we.exercise,
-            order_index: we.order_index,
-            sets: we.sets.sort((a: any, b: any) => a.set_number - b.set_number),
-        }));
-
-        setWorkoutExercises(exercises);
-        setWorkoutStarted(true);
-        setShowResumePrompt(false);
-        setDraftWorkout(null);
-    };
-
-    // Discard draft workout
-    const discardDraftWorkout = async () => {
-        if (!draftWorkout) return;
-
-        try {
-            await supabase
-                .from("workouts")
-                .delete()
-                .eq("id", draftWorkout.id);
-
-            setShowResumePrompt(false);
-            setDraftWorkout(null);
-        } catch (error) {
-            console.error("Error discarding draft workout:", error);
-        }
-    };
 
     // Auto-save workout data (debounced)
     useEffect(() => {
@@ -125,7 +104,7 @@ export default function WorkoutPage() {
 
         const autoSave = setTimeout(async () => {
             await saveWorkoutToDB();
-        }, 2000); // Save 2 seconds after last change
+        }, 2000);
 
         return () => clearTimeout(autoSave);
     }, [workoutExercises, workoutStarted, workoutId]);
@@ -135,13 +114,11 @@ export default function WorkoutPage() {
         if (!workoutId) return;
 
         try {
-            // Update workout name
             await supabase
                 .from("workouts")
                 .update({ name: workoutName })
                 .eq("id", workoutId);
 
-            // Update all sets
             for (const exercise of workoutExercises) {
                 for (const set of exercise.sets) {
                     await supabase
@@ -155,6 +132,7 @@ export default function WorkoutPage() {
             }
         } catch (error) {
             console.error("Error auto-saving workout:", error);
+            setErrorMessages((prev) => ({ ...prev, general: "Failed to auto-save workout." }));
         }
     };
 
@@ -178,6 +156,7 @@ export default function WorkoutPage() {
                 setSearchResults(data || []);
             } catch (error) {
                 console.error("Error searching exercises:", error);
+                setErrorMessages((prev) => ({ ...prev, search: "Failed to search exercises." }));
             } finally {
                 setIsSearching(false);
             }
@@ -210,19 +189,17 @@ export default function WorkoutPage() {
             setWorkoutStarted(true);
         } catch (error) {
             console.error("Error starting workout:", error);
-            alert("Failed to start workout");
+            setErrorMessages((prev) => ({ ...prev, general: "Failed to start workout." }));
         }
     };
 
-    // Finish workout (marks as completed)
+    // Finish workout
     const finishWorkout = async () => {
         if (!workoutId) return;
 
         try {
-            // Final save
             await saveWorkoutToDB();
 
-            // Mark workout as completed
             const { error } = await supabase
                 .from("workouts")
                 .update({ status: "completed" })
@@ -230,18 +207,18 @@ export default function WorkoutPage() {
 
             if (error) throw error;
 
-            // Reset state
             setWorkoutStarted(false);
             setWorkoutId(null);
             setWorkoutExercises([]);
             setWorkoutName("My Workout");
+            setErrorMessages({});
         } catch (error) {
             console.error("Error finishing workout:", error);
-            alert("Failed to finish workout");
+            setErrorMessages((prev) => ({ ...prev, general: "Failed to finish workout." }));
         }
     };
 
-    // Cancel workout (deletes everything)
+    // Cancel workout
     const cancelWorkout = async () => {
         if (!workoutId) return;
 
@@ -249,7 +226,6 @@ export default function WorkoutPage() {
         if (!confirmed) return;
 
         try {
-            // Delete the workout (cascade will handle workout_exercises and sets)
             const { error } = await supabase
                 .from("workouts")
                 .delete()
@@ -261,9 +237,69 @@ export default function WorkoutPage() {
             setWorkoutId(null);
             setWorkoutExercises([]);
             setWorkoutName("My Workout");
+            setErrorMessages({});
         } catch (error) {
             console.error("Error canceling workout:", error);
-            alert("Failed to cancel workout");
+            setErrorMessages((prev) => ({ ...prev, general: "Failed to cancel workout." }));
+        }
+    };
+
+    // Resume draft workout
+    const resumeDraftWorkout = async () => {
+        if (!draftWorkout) return;
+
+        try {
+            const { data, error } = await supabase
+                .from("workouts")
+                .select("id")
+                .eq("id", draftWorkout.id)
+                .single();
+
+            if (error || !data) {
+                setErrorMessages((prev) => ({ ...prev, general: "Draft workout no longer exists." }));
+                setShowResumePrompt(false);
+                setDraftWorkout(null);
+                return;
+            }
+
+            setWorkoutId(draftWorkout.id);
+            setWorkoutName(draftWorkout.name);
+
+            const exercises = draftWorkout.workout_exercises.map((we) => ({
+                id: we.id,
+                exercise_id: we.exercise_id,
+                exercise: we.exercise,
+                order_index: we.order_index,
+                sets: we.sets.sort((a, b) => a.set_number - b.set_number),
+            }));
+
+            setWorkoutExercises(exercises);
+            setWorkoutStarted(true);
+            setShowResumePrompt(false);
+            setDraftWorkout(null);
+            setErrorMessages({});
+        } catch (error) {
+            console.error("Error resuming draft workout:", error);
+            setErrorMessages((prev) => ({ ...prev, general: "Failed to resume draft workout." }));
+        }
+    };
+
+    // Discard draft workout
+    const discardDraftWorkout = async () => {
+        if (!draftWorkout) return;
+
+        try {
+            await supabase
+                .from("workouts")
+                .delete()
+                .eq("id", draftWorkout.id);
+
+            setShowResumePrompt(false);
+            setDraftWorkout(null);
+            setErrorMessages({});
+        } catch (error) {
+            console.error("Error discarding draft workout:", error);
+            setErrorMessages((prev) => ({ ...prev, general: "Failed to discard draft workout." }));
         }
     };
 
@@ -272,7 +308,6 @@ export default function WorkoutPage() {
         if (!workoutId) return;
 
         try {
-            // Add workout exercise
             const { data: workoutExerciseData, error: exerciseError } = await supabase
                 .from("workout_exercises")
                 .insert({
@@ -285,7 +320,6 @@ export default function WorkoutPage() {
 
             if (exerciseError) throw exerciseError;
 
-            // Add default set
             const { data: setData, error: setError } = await supabase
                 .from("sets")
                 .insert({
@@ -313,18 +347,26 @@ export default function WorkoutPage() {
             setShowExerciseSearch(false);
             setSearchQuery("");
             setSearchResults([]);
+            setErrorMessages((prev) => ({ ...prev, search: "" }));
         } catch (error) {
             console.error("Error adding exercise:", error);
-            alert("Failed to add exercise");
+            setErrorMessages((prev) => ({ ...prev, general: "Failed to add exercise." }));
         }
     };
 
     // Add set to specific exercise
     const addSetToExercise = async (exerciseIndex: number) => {
         const workoutExercise = workoutExercises[exerciseIndex];
-        const setNumber = workoutExercise.sets.length + 1;
+        if (workoutExercise.sets.length >= 10) {
+            setErrorMessages((prev) => ({
+                ...prev,
+                [`exercise-${exerciseIndex}`]: "Maximum 10 sets per exercise.",
+            }));
+            return;
+        }
 
         try {
+            const setNumber = workoutExercise.sets.length + 1;
             const { data, error } = await supabase
                 .from("sets")
                 .insert({
@@ -344,21 +386,31 @@ export default function WorkoutPage() {
                 sets: [...updatedExercises[exerciseIndex].sets, data],
             };
             setWorkoutExercises(updatedExercises);
+            setErrorMessages((prev) => ({ ...prev, [`exercise-${exerciseIndex}`]: "" }));
         } catch (error) {
             console.error("Error adding set:", error);
-            alert("Failed to add set");
+            setErrorMessages((prev) => ({ ...prev, [`exercise-${exerciseIndex}`]: "Failed to add set." }));
         }
     };
 
-    // Update set values (local state only - no immediate DB call)
+    // Update set values
     const updateSet = (exerciseIndex: number, setIndex: number, field: 'reps' | 'weight', value: number) => {
+        const errorKey = `exercise-${exerciseIndex}-set-${setIndex}-${field}`;
+        if (value < 0) {
+            setErrorMessages((prev) => ({
+                ...prev,
+                [errorKey]: `${field.charAt(0).toUpperCase() + field.slice(1)} cannot be negative.`,
+            }));
+            return;
+        }
+
         const updatedExercises = [...workoutExercises];
         updatedExercises[exerciseIndex].sets[setIndex] = {
             ...updatedExercises[exerciseIndex].sets[setIndex],
             [field]: value,
         };
         setWorkoutExercises(updatedExercises);
-        // DB update happens via debounced auto-save useEffect
+        setErrorMessages((prev) => ({ ...prev, [errorKey]: "" }));
     };
 
     // Delete a specific set
@@ -375,17 +427,16 @@ export default function WorkoutPage() {
 
             const updatedExercises = [...workoutExercises];
             updatedExercises[exerciseIndex].sets.splice(setIndex, 1);
-
-            // Renumber remaining sets
             updatedExercises[exerciseIndex].sets = updatedExercises[exerciseIndex].sets.map((s, idx) => ({
                 ...s,
-                set_number: idx + 1
+                set_number: idx + 1,
             }));
 
             setWorkoutExercises(updatedExercises);
+            setErrorMessages((prev) => ({ ...prev, [`exercise-${exerciseIndex}`]: "" }));
         } catch (error) {
             console.error("Error deleting set:", error);
-            alert("Failed to delete set");
+            setErrorMessages((prev) => ({ ...prev, [`exercise-${exerciseIndex}`]: "Failed to delete set." }));
         }
     };
 
@@ -404,53 +455,36 @@ export default function WorkoutPage() {
             const updatedExercises = [...workoutExercises];
             updatedExercises.splice(exerciseIndex, 1);
             setWorkoutExercises(updatedExercises);
+            setErrorMessages((prev) => ({ ...prev, [`exercise-${exerciseIndex}`]: "" }));
         } catch (error) {
             console.error("Error deleting exercise:", error);
-            alert("Failed to delete exercise");
+            setErrorMessages((prev) => ({ ...prev, [`exercise-${exerciseIndex}`]: "Failed to delete exercise." }));
         }
     };
 
     return (
         <ProtectedWrapper>
             <div className="min-w-full p-4">
-                {/* Resume Draft Workout Prompt */}
-                {showResumePrompt && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white rounded-lg p-6 max-w-md w-full">
-                            <h3 className="text-xl font-bold mb-4">Resume Workout?</h3>
-                            <p className="mb-6 text-gray-700">
-                                You have an unfinished workout. Would you like to resume it or start fresh?
-                            </p>
-                            <div className="flex gap-3">
-                                <Button onClick={resumeDraftWorkout} className="flex-1">
-                                    Resume
-                                </Button>
-                                <button
-                                    onClick={discardDraftWorkout}
-                                    className="flex-1 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-                                >
-                                    Discard
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                {errorMessages.general && (
+                    <div className="mb-4 text-red-600">{errorMessages.general}</div>
                 )}
 
-                <div className="flex justify-between items-center mb-6">
-                    <div className="text-3xl font-bold">Workout</div>
-                    {!workoutStarted ? (
-                        <Button onClick={startWorkout}>New Workout</Button>
-                    ) : (
-                        <div className="flex gap-2">
-                            <Button onClick={cancelWorkout}>Cancel Workout</Button>
-                            <Button onClick={finishWorkout}>Finish Workout</Button>
-                        </div>
-                    )}
-                </div>
+                <ResumeDraftPrompt
+                    show={showResumePrompt}
+                    draftWorkout={draftWorkout}
+                    onResume={resumeDraftWorkout}
+                    onDiscard={discardDraftWorkout}
+                />
+
+                <WorkoutHeader
+                    workoutStarted={workoutStarted}
+                    onStart={startWorkout}
+                    onCancel={cancelWorkout}
+                    onFinish={finishWorkout}
+                />
 
                 {workoutStarted && (
                     <div className="space-y-4 mt-4">
-                        {/* Workout Name */}
                         <div>
                             <label className="block mb-1 text-sm font-medium">Workout Name</label>
                             <input
@@ -461,119 +495,53 @@ export default function WorkoutPage() {
                             />
                         </div>
 
-                        {/* Add Exercise Button */}
                         <div>
                             <Button onClick={() => setShowExerciseSearch(true)}>
                                 Add Exercise
                             </Button>
                         </div>
 
-                        {/* Exercise Search Modal */}
-                        {showExerciseSearch && (
-                            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                                <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
-                                    <h3 className="text-xl font-bold mb-4">Search Exercises</h3>
-                                    <input
-                                        type="text"
-                                        placeholder="Type to search..."
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="border rounded px-3 py-2 w-full mb-4"
-                                        autoFocus
+                        <ExerciseSearchModal
+                            isOpen={showExerciseSearch}
+                            searchQuery={searchQuery}
+                            setSearchQuery={setSearchQuery}
+                            searchResults={searchResults}
+                            isSearching={isSearching}
+                            onClose={() => {
+                                setShowExerciseSearch(false);
+                                setSearchQuery("");
+                                setSearchResults([]);
+                                setErrorMessages((prev) => ({ ...prev, search: "" }));
+                            }}
+                            onSelectExercise={addExerciseToWorkout}
+                        />
+
+                        {workoutExercises.length === 0 ? (
+                            <div className="text-center text-gray-500 py-8">
+                                No exercises added yet. Click "Add Exercise" to start.
+                            </div>
+                        ) : (
+                            <div className="space-y-6">
+                                {workoutExercises.map((workoutExercise, exerciseIndex) => (
+                                    <ExerciseCard
+                                        key={workoutExercise.id}
+                                        workoutExercise={workoutExercise}
+                                        exerciseIndex={exerciseIndex}
+                                        onAddSet={addSetToExercise}
+                                        onUpdateSet={updateSet}
+                                        onDeleteSet={deleteSet}
+                                        onDeleteExercise={deleteExercise}
+                                        errorMessage={errorMessages[`exercise-${exerciseIndex}`] || ""}
+                                        setErrorMessage={(message: string) =>
+                                            setErrorMessages((prev) => ({
+                                                ...prev,
+                                                [`exercise-${exerciseIndex}`]: message,
+                                            }))
+                                        }
                                     />
-
-                                    {isSearching && <p className="text-gray-500">Searching...</p>}
-
-                                    <div className="space-y-2">
-                                        {searchResults.map((exercise) => (
-                                            <div
-                                                key={exercise.exercise_id}
-                                                onClick={() => addExerciseToWorkout(exercise)}
-                                                className="p-3 border rounded hover:bg-gray-100 cursor-pointer"
-                                            >
-                                                <div className="font-medium">{exercise.name}</div>
-                                                {exercise.target_muscles && exercise.target_muscles.length > 0 && (
-                                                    <div className="text-sm text-gray-600">
-                                                        {exercise.target_muscles.join(", ")}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    <Button
-                                        onClick={() => {
-                                            setShowExerciseSearch(false);
-                                            setSearchQuery("");
-                                            setSearchResults([]);
-                                        }}
-                                        className="mt-4 w-full"
-                                    >
-                                        Close
-                                    </Button>
-                                </div>
+                                ))}
                             </div>
                         )}
-
-                        {/* Exercises List */}
-                        <div className="space-y-6">
-                            {workoutExercises.map((workoutExercise, exerciseIndex) => (
-                                <div key={workoutExercise.id} className="border rounded p-4">
-                                    <h3 className="text-lg font-semibold mb-3">
-                                        {workoutExercise.exercise.name}
-                                    </h3>
-
-                                    {/* Sets */}
-                                    <div className="space-y-2 mb-3">
-                                        {workoutExercise.sets.map((set, setIndex) => (
-                                            <div key={set.id} className="flex gap-2 items-center">
-                                                <span className="font-medium w-16">Set {set.set_number}:</span>
-                                                <input
-                                                    type="number"
-                                                    placeholder="Reps"
-                                                    value={set.reps || ""}
-                                                    onChange={(e) =>
-                                                        updateSet(exerciseIndex, setIndex, "reps", parseInt(e.target.value) || 0)
-                                                    }
-                                                    className="border rounded px-2 py-1 w-20"
-                                                />
-                                                <span className="text-sm">reps</span>
-                                                <input
-                                                    type="number"
-                                                    placeholder="Weight"
-                                                    value={set.weight || ""}
-                                                    onChange={(e) =>
-                                                        updateSet(exerciseIndex, setIndex, "weight", parseFloat(e.target.value) || 0)
-                                                    }
-                                                    className="border rounded px-2 py-1 w-24"
-                                                    step="0.5"
-                                                />
-                                                <span className="text-sm">kg</span>
-                                                <button
-                                                    onClick={() => deleteSet(exerciseIndex, setIndex)}
-                                                    className="ml-2 text-red-600 hover:text-red-800 font-bold"
-                                                >
-                                                    ✕
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Add Set and Delete Exercise Buttons */}
-                                    <div className="flex gap-2">
-                                        <Button onClick={() => addSetToExercise(exerciseIndex)}>
-                                            Add Set
-                                        </Button>
-                                        <button
-                                            onClick={() => deleteExercise(exerciseIndex)}
-                                            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 font-bold"
-                                        >
-                                            Delete Exercise
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
                     </div>
                 )}
             </div>
