@@ -48,39 +48,81 @@ export default function ExerciseDetailsPage() {
 
     return (
         <ProtectedWrapper>
-            <div className="p-4">
-                <div className="mb-4">
-                    <h1 className="text-3xl font-semibold">{exercise.name}</h1>
-                    <div className="text-sm text-[var(--muted-foreground)]">{exercise.body_parts?.join(", ")}</div>
-                </div>
-
-                {exercise.gif_url && (
-                    <div className="mb-6 border rounded-sm p-4 bg-white">
-                        <img
-                            src={exercise.gif_url}
-                            alt={exercise.name}
-                            className="rounded-sm max-w-full h-auto"
-                        />
+            <div className="max-w-5xl mx-auto px-4 py-8">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    {/* Header Section */}
+                    <div className="p-6 border-b border-gray-100">
+                        <h1 className="text-3xl font-bold text-gray-900 mb-2">{exercise.name}</h1>
+                        {exercise.body_parts?.length ? (
+                            <div className="flex flex-wrap gap-2">
+                                {exercise.body_parts.map((part, index) => (
+                                    <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                                        {part}
+                                    </span>
+                                ))}
+                            </div>
+                        ) : null}
                     </div>
-                )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="card p-4">
-                        <div className="text-sm font-semibold text-[var(--muted-foreground)] mb-2">Overview</div>
-                        <div className="space-y-2">
-                            <div><strong>Target Muscles:</strong> {exercise.target_muscles?.join(", ") || "—"}</div>
-                            <div><strong>Body Parts:</strong> {exercise.body_parts?.join(", ") || "—"}</div>
-                            <div><strong>Equipments:</strong> {exercise.equipments?.join(", ") || "—"}</div>
-                            <div><strong>Secondary Muscles:</strong> {exercise.secondary_muscles?.join(", ") || "—"}</div>
+                    {/* Main Content */}
+                    <div className="p-6">
+                        {/* Exercise GIF */}
+                        {exercise.gif_url && (
+                            <div className="mb-8 bg-gray-50 rounded-lg overflow-hidden">
+                                <img
+                                    src={exercise.gif_url}
+                                    alt={exercise.name}
+                                    className="w-full max-w-md mx-auto h-auto rounded-lg"
+                                />
+                            </div>
+                        )}
+
+                        {/* Exercise Details */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Overview Card */}
+                            <div className="bg-gray-50 rounded-lg p-5">
+                                <h2 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">Exercise Details</h2>
+                                <div className="space-y-4">
+                                    <div>
+                                        <h3 className="text-sm font-medium text-gray-500">Target Muscles</h3>
+                                        <p className="mt-1 text-gray-700">{exercise.target_muscles?.join(", ") || "—"}</p>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-sm font-medium text-gray-500">Equipment</h3>
+                                        <p className="mt-1 text-gray-700">
+                                            {exercise.equipments?.length ? (
+                                                exercise.equipments.join(", ")
+                                            ) : "None"}
+                                        </p>
+                                    </div>
+                                    {exercise.secondary_muscles?.length ? (
+                                        <div>
+                                            <h3 className="text-sm font-medium text-gray-500">Secondary Muscles</h3>
+                                            <p className="mt-1 text-gray-700">{exercise.secondary_muscles.join(", ")}</p>
+                                        </div>
+                                    ) : null}
+                                </div>
+                            </div>
+
+                            {/* Instructions Card */}
+                            <div className="bg-gray-50 rounded-lg p-5">
+                                <h2 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">How to Perform</h2>
+                                {exercise.instructions?.length ? (
+                                    <ol className="space-y-4">
+                                        {exercise.instructions.map((step, idx) => (
+                                            <li key={idx} className="flex">
+                                                <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-sm font-medium mr-3">
+                                                    {idx + 1}
+                                                </span>
+                                                <p className="text-gray-700">{step}</p>
+                                            </li>
+                                        ))}
+                                    </ol>
+                                ) : (
+                                    <p className="text-gray-500 italic">No instructions available for this exercise.</p>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                    <div className="card p-4">
-                        <div className="text-sm font-semibold text-[var(--muted-foreground)] mb-2">Instructions</div>
-                        <ul className="list-disc list-inside space-y-1">
-                            {exercise.instructions?.length
-                                ? exercise.instructions.map((step, idx) => <li key={idx}>{step}</li>)
-                                : <li>—</li>}
-                        </ul>
                     </div>
                 </div>
             </div>

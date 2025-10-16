@@ -18,7 +18,7 @@ export default function Navbar() {
     return (
         <>
             {/* Sidebar for desktop */}
-            <nav className="hidden md:flex w-64 min-h-screen p-6 flex-col bg-[var(--primary-700)] text-white">
+            <nav className="hidden md:flex w-64 sticky top-0 h-screen p-6 flex-col bg-[var(--primary-700)] text-white">
                 <h1 className="text-2xl font-semibold mb-6">Workout Tracker</h1>
                 <ul className="flex flex-col gap-2">
                     {tabs.map((tab) => (
