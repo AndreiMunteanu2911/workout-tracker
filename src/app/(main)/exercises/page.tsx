@@ -83,7 +83,7 @@ export default function ExercisesPage() {
     return (
         <ProtectedWrapper>
             <div className="p-4">
-                <h1 className="text-3xl font-semibold text-gray-700 mb-6">Exercises</h1>
+                <h1 className="sticky top-0 py-4 bg-white z-10 text-3xl font-semibold text-gray-700 mb-6">Exercises</h1>
 
                     <div className="flex flex-col gap-2">
                         {exercises.map((exercise) => (

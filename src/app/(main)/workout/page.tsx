@@ -476,7 +476,7 @@ export default function WorkoutPage() {
                 />
 
                 {/* Move WorkoutHeader content here, remove WorkoutHeader import and usage */}
-                <div className="flex justify-between items-center mb-6">
+                <div className="sticky top-0 py-4 bg-white z-10 flex justify-between items-center mb-6">
                     <div className="text-3xl text-gray-700 font-bold">Workout</div>
                     {!workoutStarted ? (
                         <Button onClick={startWorkout}>New Workout</Button>
