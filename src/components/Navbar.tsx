@@ -19,7 +19,7 @@ export default function Navbar() {
         <>
             {/* Sidebar for desktop */}
             <nav className="hidden md:flex w-64 sticky top-0 h-screen p-6 flex-col bg-[var(--primary-700)] text-white">
-                <h1 className="text-2xl font-semibold mb-6">Workout Tracker</h1>
+                <h1 className="text-4xl font-semibold mb-12">FitPulse</h1>
                 <ul className="flex flex-col gap-2">
                     {tabs.map((tab) => (
                         <li key={tab.name}>
@@ -44,7 +44,7 @@ export default function Navbar() {
             </nav>
 
             {/* Bottom navbar for mobile */}
-            <nav className="fixed bottom-0 left-0 right-0 md:hidden bg-[var(--primary-700)] text-white">
+            <nav className="fixed bottom-0 left-0 right-0 md:hidden bg-[var(--primary-700)] text-white mt-20">
                 <ul className="flex justify-around py-1">
                     {tabs.map((tab) => (
                         <li key={tab.name}>

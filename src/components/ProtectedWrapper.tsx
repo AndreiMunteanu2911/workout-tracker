@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import supabase from "@/helper/supabaseClient";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function ProtectedWrapper({ children }: { children: React.ReactNode }) {
     const [authenticated, setAuthenticated] = useState(false);
@@ -29,7 +30,7 @@ export default function ProtectedWrapper({ children }: { children: React.ReactNo
     }, [loading, authenticated, router]);
 
     if (loading) {
-        return <div>Loading....</div>;
+        return <div className="flex justify-center items-center h-full"><LoadingSpinner size={10} /></div>;
     }
 
     if (!authenticated) {

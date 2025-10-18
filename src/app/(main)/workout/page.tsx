@@ -6,7 +6,6 @@ import supabase from "@/helper/supabaseClient";
 import ExerciseCard from "@/components/WorkoutExerciseCard";
 import ExerciseSearchModal from "@/components/ExerciseSearchModal";
 import ResumeDraftPrompt from "@/components/ResumeDraftPrompt";
-import WorkoutHeader from "@/components/WorkoutHeader";
 import Button from "@/components/Button";
 
 interface Exercise {
@@ -476,12 +475,18 @@ export default function WorkoutPage() {
                     onDiscard={discardDraftWorkout}
                 />
 
-                <WorkoutHeader
-                    workoutStarted={workoutStarted}
-                    onStart={startWorkout}
-                    onCancel={cancelWorkout}
-                    onFinish={finishWorkout}
-                />
+                {/* Move WorkoutHeader content here, remove WorkoutHeader import and usage */}
+                <div className="flex justify-between items-center mb-6">
+                    <div className="text-3xl text-gray-700 font-bold">Workout</div>
+                    {!workoutStarted ? (
+                        <Button onClick={startWorkout}>New Workout</Button>
+                    ) : (
+                        <div className="flex gap-2">
+                            <Button onClick={cancelWorkout}>Cancel Workout</Button>
+                            <Button onClick={finishWorkout}>Finish Workout</Button>
+                        </div>
+                    )}
+                </div>
 
                 {workoutStarted && (
                     <div className="space-y-4 mt-4">

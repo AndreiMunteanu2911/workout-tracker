@@ -6,6 +6,7 @@ import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
 import ProtectedWrapper from "@/components/ProtectedWrapper";
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function DashboardPage() {
     const router = useRouter();
@@ -84,7 +85,7 @@ export default function DashboardPage() {
                 <div className="mb-6">
                     <h2 className="text-xl font-semibold mb-2">My Weight History</h2>
                     {loading ? (
-                        <p>Loading...</p>
+                        <div className="flex justify-center items-center py-8"><LoadingSpinner size={8} /></div>
                     ) : weights.length === 0 ? (
                         <p>No weight logs yet.</p>
                     ) : (

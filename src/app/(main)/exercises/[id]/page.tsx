@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import ProtectedWrapper from "@/components/ProtectedWrapper";
 import supabase from "@/helper/supabaseClient";
 import { Exercise } from "@/components/ExerciseCard";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function ExerciseDetailsPage() {
     const { id } = useParams();
@@ -33,7 +34,7 @@ export default function ExerciseDetailsPage() {
     if (loading) {
         return (
             <ProtectedWrapper>
-                <div className="p-4">Loading exercise details...</div>
+                <LoadingSpinner size={8} />
             </ProtectedWrapper>
         );
     }
@@ -41,90 +42,87 @@ export default function ExerciseDetailsPage() {
     if (!exercise) {
         return (
             <ProtectedWrapper>
-                <div className="p-4 text-red-600">Exercise not found.</div>
+                <div>Exercise not found.</div>
             </ProtectedWrapper>
         );
     }
 
+    // Capitalize first letter utility
+    const capitalize = (str: string) => str ? str.charAt(0).toUpperCase() + str.slice(1) : str;
+
     return (
         <ProtectedWrapper>
-            <div className="max-w-5xl mx-auto px-4 py-8">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    {/* Header Section */}
-                    <div className="p-6 border-b border-gray-100">
-                        <h1 className="text-3xl font-bold text-gray-900 mb-2">{exercise.name}</h1>
-                        {exercise.body_parts?.length ? (
+            <div className="p-4 mx-auto md:pl-12">
+                <h1 className="text-3xl text-gray-700 font-semibold mb-6">{capitalize(exercise.name)}</h1>
+                <div className="flex flex-row items-start gap-8 mb-6">
+                    {exercise.gif_url && (
+                        <img src={exercise.gif_url} alt={exercise.name + ' demo'} style={{ height: '300px', width: '300px', objectFit: 'contain' }} />
+                    )}
+                    <div className="flex flex-col gap-4 ml-4">
+                        <div>
+                            <h2 className="text-xl text-gray-700 font-semibold mb-1">Target Muscles</h2>
                             <div className="flex flex-wrap gap-2">
-                                {exercise.body_parts.map((part, index) => (
-                                    <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
-                                        {part}
-                                    </span>
-                                ))}
+                                {exercise.target_muscles?.length
+                                    ? exercise.target_muscles.map((muscle, idx) => (
+                                        <span key={idx} className="inline-block rounded-4xl bg-[color:var(--primary-500)] text-white px-3 py-1">
+                                            {capitalize(muscle)}
+                                        </span>
+                                    ))
+                                    : <span className="inline-block rounded-4xl bg-[color:var(--primary-500)] text-white px-3 py-1">—</span>
+                                }
+                            </div>
+                        </div>
+                        <div>
+                            <h2 className="text-xl text-gray-700 font-semibold mb-1">Equipment</h2>
+                            <div className="flex flex-wrap gap-2">
+                                {exercise.equipments?.length
+                                    ? exercise.equipments.map((eq, idx) => (
+                                        <span key={idx} className="inline-block rounded-4xl bg-[color:var(--primary-500)] text-white px-3 py-1">
+                                            {capitalize(eq)}
+                                        </span>
+                                    ))
+                                    : <span className="inline-block rounded-4xl bg-[color:var(--primary-500)] text-white px-3 py-1">None</span>
+                                }
+                            </div>
+                        </div>
+                        {exercise.secondary_muscles?.length ? (
+                            <div>
+                                <h2 className="text-xl text-gray-700 font-semibold mb-1">Secondary Muscles</h2>
+                                <div className="flex flex-wrap gap-2">
+                                    {exercise.secondary_muscles.map((muscle, idx) => (
+                                        <span key={idx} className="inline-block rounded-4xl bg-[color:var(--primary-500)] text-white px-3 py-1">
+                                            {capitalize(muscle)}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : null}
+                        {exercise.body_parts?.length ? (
+                            <div>
+                                <h2 className="text-xl text-gray-700 font-semibold mb-1">Body Parts</h2>
+                                <div className="flex flex-wrap gap-2">
+                                    {exercise.body_parts.map((part, idx) => (
+                                        <span key={idx} className="inline-block rounded-4xl bg-[color:var(--primary-500)] text-white px-3 py-1">
+                                            {capitalize(part)}
+                                        </span>
+                                    ))}
+                                </div>
                             </div>
                         ) : null}
                     </div>
-
-                    {/* Main Content */}
-                    <div className="p-6">
-                        {/* Exercise GIF */}
-                        {exercise.gif_url && (
-                            <div className="mb-8 bg-gray-50 rounded-lg overflow-hidden">
-                                <img
-                                    src={exercise.gif_url}
-                                    alt={exercise.name}
-                                    className="w-full max-w-md mx-auto h-auto rounded-lg"
-                                />
-                            </div>
-                        )}
-
-                        {/* Exercise Details */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Overview Card */}
-                            <div className="bg-gray-50 rounded-lg p-5">
-                                <h2 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">Exercise Details</h2>
-                                <div className="space-y-4">
-                                    <div>
-                                        <h3 className="text-sm font-medium text-gray-500">Target Muscles</h3>
-                                        <p className="mt-1 text-gray-700">{exercise.target_muscles?.join(", ") || "—"}</p>
-                                    </div>
-                                    <div>
-                                        <h3 className="text-sm font-medium text-gray-500">Equipment</h3>
-                                        <p className="mt-1 text-gray-700">
-                                            {exercise.equipments?.length ? (
-                                                exercise.equipments.join(", ")
-                                            ) : "None"}
-                                        </p>
-                                    </div>
-                                    {exercise.secondary_muscles?.length ? (
-                                        <div>
-                                            <h3 className="text-sm font-medium text-gray-500">Secondary Muscles</h3>
-                                            <p className="mt-1 text-gray-700">{exercise.secondary_muscles.join(", ")}</p>
-                                        </div>
-                                    ) : null}
-                                </div>
-                            </div>
-
-                            {/* Instructions Card */}
-                            <div className="bg-gray-50 rounded-lg p-5">
-                                <h2 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">How to Perform</h2>
-                                {exercise.instructions?.length ? (
-                                    <ol className="space-y-4">
-                                        {exercise.instructions.map((step, idx) => (
-                                            <li key={idx} className="flex">
-                                                <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-sm font-medium mr-3">
-                                                    {idx + 1}
-                                                </span>
-                                                <p className="text-gray-700">{step}</p>
-                                            </li>
-                                        ))}
-                                    </ol>
-                                ) : (
-                                    <p className="text-gray-500 italic">No instructions available for this exercise.</p>
-                                )}
-                            </div>
-                        </div>
-                    </div>
                 </div>
+                {exercise.instructions?.length ? (
+                    <div className="mb-4">
+                        <h2 className="text-xl text-gray-700 font-semibold mb-2">Instructions</h2>
+                        <ol className="list-inside">
+                            {exercise.instructions.map((step, idx) => (
+                                <li key={idx}>{step}</li>
+                            ))}
+                        </ol>
+                    </div>
+                ) : (
+                    <p>No instructions available for this exercise.</p>
+                )}
             </div>
         </ProtectedWrapper>
     );

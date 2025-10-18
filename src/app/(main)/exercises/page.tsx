@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import ProtectedWrapper from "@/components/ProtectedWrapper";
 import ExerciseCard, { Exercise } from "@/components/ExerciseCard";
 import supabase from "@/helper/supabaseClient";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 const BATCH_SIZE = 20;
 
@@ -30,10 +31,15 @@ export default function ExercisesPage() {
         if (error) {
             console.error("Error fetching exercises:", error);
         } else {
+            // Capitalize first letter of exercise name
+            const processedData = (data ?? []).map(e => ({
+                ...e,
+                name: e.name ? e.name.charAt(0).toUpperCase() + e.name.slice(1) : e.name
+            }));
             setExercises((prev) => {
                 // Deduplicate to be safe
                 const existingIds = new Set(prev.map(e => e.exercise_id));
-                const newExercises = (data ?? []).filter(e => !existingIds.has(e.exercise_id));
+                const newExercises = processedData.filter(e => !existingIds.has(e.exercise_id));
                 return [...prev, ...newExercises];
             });
 
@@ -77,17 +83,17 @@ export default function ExercisesPage() {
     return (
         <ProtectedWrapper>
             <div className="p-4">
-                <h1 className="text-3xl font-bold mb-6">Exercises</h1>
+                <h1 className="text-3xl font-semibold text-gray-700 mb-6">Exercises</h1>
 
-                <div className="flex flex-col gap-3">
-                    {exercises.map((exercise) => (
-                        <ExerciseCard key={exercise.exercise_id} exercise={exercise} />
-                    ))}
-                </div>
+                    <div className="flex flex-col gap-2">
+                        {exercises.map((exercise) => (
+                            <ExerciseCard key={exercise.exercise_id} exercise={exercise} />
+                        ))}
+                    </div>
 
-                {loading && <div className="text-center mt-4">Loading more...</div>}
-                <div ref={loaderRef} className="h-10" />
-                {!hasMore && <div className="text-center mt-4">No more exercises.</div>}
+                    <div ref={loaderRef} className="h-10" />
+                    {loading && <div className="flex justify-center items-center py-4"><LoadingSpinner size={8} /></div>}
+                    {!hasMore && <div className="text-center mt-4">No more exercises.</div>}
             </div>
         </ProtectedWrapper>
     );

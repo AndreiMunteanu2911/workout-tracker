@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import ProtectedWrapper from "@/components/ProtectedWrapper";
 import supabase from "@/helper/supabaseClient";
 import WorkoutHistoryCard from "@/components/WorkoutHistoryCard";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 interface Exercise {
     exercise_id: string;
@@ -99,7 +100,9 @@ export default function HistoryPage() {
             <ProtectedWrapper>
                 <div className="min-w-full p-4">
                     <div className="text-3xl font-bold mb-6">Workout History</div>
-                    <div className="text-gray-500">Loading workout history...</div>
+                    <div className="flex items-center justify-center py-8">
+                        <LoadingSpinner size={40} />
+                    </div>
                 </div>
             </ProtectedWrapper>
         );
@@ -108,7 +111,7 @@ export default function HistoryPage() {
     return (
         <ProtectedWrapper>
             <div className="min-w-full p-4">
-                <div className="text-3xl font-bold mb-6">Workout History</div>
+                <div className="text-3xl text-gray-700 font-bold mb-6">History</div>
                 {errorMessages.general && (
                     <div className="mb-4 text-red-600">{errorMessages.general}</div>
                 )}
