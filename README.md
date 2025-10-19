@@ -138,3 +138,8 @@ status text DEFAULT 'draft' CHECK (status IN ('draft', 'completed'))
 ```
 
 > All foreign keys are enforced and cascade deletes are used for user and workout relationships
+
+---
+
+## Credits
+- Exercise data powered by [ExerciseDB](https://www.exercisedb.dev/docs)
