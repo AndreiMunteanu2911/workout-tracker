@@ -1,45 +1,85 @@
-# Workout Tracker
+# FitPulse Workout Tracker
 
-A modern web application to log, track, and manage your workouts and fitness progress. Built with Next.js, React, Supabase, and Tailwind CSS.
+FitPulse is a web application for tracking workouts, exercises, and weight progress. It is built with Next.js (App Router), React, Supabase, and Tailwind CSS. The app provides a responsive, modern interface for logging workouts, viewing history, and managing fitness data.
 
-## 🚀 Features
-- **User Authentication:** Sign up, login, and protected routes using Supabase Auth.
-- **Dashboard:** Overview of your workout stats and quick navigation.
-- **Workout Management:** Add, edit, and delete workouts. Resume draft workouts.
-- **Exercise Management:** Search, add, and manage exercises for each workout.
-- **Workout History:** View detailed history of past workouts, including exercises, sets, and total volume.
-- **Profile:** Manage your user profile and sign out.
-- **Responsive UI:** Mobile-friendly design with a bottom navbar and modern card components.
+## Table of Contents
+- [Features](#features)
+- [Architecture](#architecture)
+- [Pages](#pages)
+- [Components](#components)
+- [Authentication & Data](#authentication--data)
+- [Assets & Styling](#assets--styling)
+- [Setup & Usage](#setup--usage)
+- [Improvements](#improvements)
 
-## 🛠️ Tech Stack
-- [Next.js](https://nextjs.org/) (React framework)
-- [React](https://react.dev/)
-- [Supabase](https://supabase.com/) (Auth & Database)
-- [Tailwind CSS](https://tailwindcss.com/)
-- TypeScript
+## Features
+- User authentication (sign up, login, protected routes) via Supabase Auth
+- Dashboard overview
+- Workout management: create, edit, delete, and resume draft workouts
+- Exercise management: search, view, and add exercises to workouts
+- Workout history: detailed view of past workouts, sets, and volume
+- Weight tracking: log and visualize weight history
+- Profile management and sign out
+- Responsive design: sidebar for desktop, bottom navbar for mobile
 
-## 📁 Main Components
-- `Button`, `Navbar`, `ExerciseCard`, `ExerciseSearchModal`, `WorkoutExerciseCard`, `WorkoutHeader`, `WorkoutHistoryCard`, `ResumeDraftPrompt`, `ProtectedWrapper`
+## Architecture
+- **Next.js App Router**: All pages are in `src/app/` using layouts and nested routing
+- **Supabase**: Used for authentication and as the backend database
+- **Tailwind CSS**: Utility-first styling
+- **Component-based**: All UI elements are modular React components in `src/components/`
 
-## 🎨 Assets
-Custom SVG icons for dashboard, exercises, history, profile, and workout are located in `public/assets/`.
+## Pages
+- **Landing (`(auth)/page.tsx`)**: Welcome page with sign up and login links
+- **Login (`(auth)/login/page.tsx`)**: User login form, handles Supabase auth
+- **Sign Up (`(auth)/signup/page.tsx`)**: User registration form, handles Supabase auth
+- **Dashboard (`(main)/dashboard/page.tsx`)**: Placeholder for user stats/overview (protected)
+- **Workout (`(main)/workout/page.tsx`)**: Main workout builder and tracker. Add exercises, sets, reps, and weights. Modals for finishing/cancelling workouts. (protected)
+- **Exercises (`(main)/exercises/page.tsx`)**: Infinite scroll/searchable list of all exercises. (protected)
+- **Exercise Details (`(main)/exercises/[id]/page.tsx`)**: Detailed view for a single exercise. (protected)
+- **History (`(main)/history/page.tsx`)**: List of all past workouts with summary info. (protected)
+- **Workout Details (`(main)/history/[id]/page.tsx`)**: Full breakdown of a specific past workout. (protected)
+- **Profile (`(main)/profile/page.tsx`)**: User profile, weight log, weight chart, and sign out. (protected)
 
-## 📋 TODO / Possible Improvements
-- Add more detailed error handling and user feedback
-- Implement analytics/statistics for workouts
-- Enhance mobile experience further
-- Add social/sharing features
-- Implement a visual chart to track exercise improvement over time
+## Components
+- **Navbar**: Responsive navigation (sidebar on desktop, bottom bar on mobile)
+- **Button**: Reusable button with variants (primary, secondary, textOnly)
+- **IconButton**: Button with an icon, used for navigation and actions
+- **ProtectedWrapper**: HOC to enforce authentication on protected pages
+- **LoadingSpinner**: Animated spinner for loading states
+- **ExerciseCard**: Displays exercise info, links to details
+- **ExerciseSearchModal**: Modal for searching/selecting exercises
+- **WorkoutExerciseCard**: Card for managing sets/reps/weight for an exercise in a workout
+- **WorkoutHistoryCard**: Card summarizing a past workout
+- **WorkoutHistoryExerciseCard**: Card showing details for an exercise in a past workout
+- **WeightHistoryChart**: Line chart of weight logs (uses recharts)
+- **WeightLogCard**: Displays a single weight log entry
+- **AddWeightModal**: Modal for adding a new weight log
+- **CancelWorkoutModal**: Modal to confirm discarding a workout
+- **FinishWorkoutModal**: Modal to confirm finishing a workout
 
-## 🏁 Getting Started
-1. Clone the repo
-2. Install dependencies with `pnpm install`
-3. Set up your Supabase project and add environment variables:
+## Authentication & Data
+- **Supabase** is initialized in `src/helper/supabaseClient.js` using environment variables
+- All protected pages/components use `ProtectedWrapper` to redirect unauthenticated users
+- Data is fetched and mutated using Supabase client methods (e.g., `.from('workouts')`, `.from('exercises')`)
+- Weight logs, workouts, and exercises are all stored in Supabase tables
+
+## Assets & Styling
+- All SVG icons and images are in `public/assets/`
+- Tailwind CSS is used for all styling
+- Custom color variables are defined for theming
+
+## Setup & Usage
+1. Clone the repository
+2. Install dependencies: `pnpm install`
+3. Set up a Supabase project and add the following environment variables:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-4. Run the development server:
-   - `pnpm dev`
+4. Start the development server: `pnpm dev`
+5. Access the app at `http://localhost:3000`
+
+## TODO
+- Improve dashboard with user stats and summaries
+- Add analytics/statistics for workouts and exercises
+- Visual charts for exercise progress
 
 ---
-
-Feel free to contribute or open issues for suggestions and improvements!
